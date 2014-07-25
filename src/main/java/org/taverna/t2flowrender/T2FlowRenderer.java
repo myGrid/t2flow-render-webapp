@@ -4,6 +4,7 @@ import static java.io.File.createTempFile;
 import static java.nio.file.Files.copy;
 import static java.nio.file.Files.readAllBytes;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static org.apache.commons.logging.LogFactory.getLog;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -19,6 +20,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 
+import org.apache.commons.logging.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -30,6 +32,8 @@ public class T2FlowRenderer {
 
 	@Autowired
 	private Invoker invoker;
+
+	Log log = getLog(T2FlowRenderer.class);
 
 	@GET
 	@Produces("text/plain")
@@ -48,7 +52,11 @@ public class T2FlowRenderer {
 			src = createTempFile("src", ".t2flow");
 			dst = createTempFile("dst", ".svg");
 			copy(t2flow, src.toPath(), REPLACE_EXISTING);
+			log.info("stored t2flow in " + src.toPath() + " (" + src.length()
+					+ " bytes)");
 			invoker.run(src, dst);
+			log.info("converted to svg in " + dst.toPath() + " ("
+					+ dst.length() + " bytes)");
 			return readAllBytes(dst.toPath());
 		} catch (IOException | InterruptedException e) {
 			throw new WebApplicationException(e, 500);

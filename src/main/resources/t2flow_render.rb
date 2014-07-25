@@ -6,7 +6,7 @@ require 'taverna-t2flow'
 # A simple operation for rendering a file from .t2flow to SVG (or PNG, if an
 # alternate format is selected)
 def render_as_format(from, to, format="svg")
-  thefile = File.new(from, "r")
+  thefile = `iconv -f ISO8859-1 #{from}`
   dotfile = Tempfile.new('dot')
   begin
     model = T2Flow::Parser.new.parse(thefile)
