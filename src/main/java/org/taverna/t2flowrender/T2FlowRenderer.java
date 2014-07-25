@@ -3,12 +3,14 @@ package org.taverna.t2flowrender;
 import static java.io.File.createTempFile;
 import static java.nio.file.Files.copy;
 import static java.nio.file.Files.readAllBytes;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -45,7 +47,7 @@ public class T2FlowRenderer {
 		try {
 			src = createTempFile("src", ".t2flow");
 			dst = createTempFile("dst", ".svg");
-			copy(t2flow, src.toPath());
+			copy(t2flow, src.toPath(), REPLACE_EXISTING);
 			invoker.run(src, dst);
 			return readAllBytes(dst.toPath());
 		} catch (IOException | InterruptedException e) {
