@@ -1,6 +1,6 @@
 T2Flow Renderer
 ===============
-You will need to install Ruby, GraphViz (specifically, `dot`) and the
+You will need to install [Ruby][1], [GraphViz][2] (specifically, `dot`) and the
 [Taverna 2 Parser Gem][3] on your container host to use this code. This
 is _in addition to_ a Java webapp container.
 
