@@ -3,9 +3,8 @@ require 'tempfile'
 require 'taverna-t2flow'
 
 ##
-# A simple operation for rendering a file from .t2flow to SVG (or PNG, if an
-# alternate format is selected)
-def render_as_format(from, to, format="svg")
+# A simple operation for rendering a file from .t2flow to SVG or PNG
+def render_as_format(from, to, format)
   thefile = `iconv -f ISO8859-1 #{from}`
   dotfile = Tempfile.new('dot')
   begin
@@ -18,4 +17,4 @@ def render_as_format(from, to, format="svg")
   end
 end
 
-render_as_format(ARGV[0], ARGV[1])
+render_as_format(ARGV[0], ARGV[1], ARGV[2]||"svg")
