@@ -23,12 +23,14 @@ import org.apache.commons.logging.Log;
 import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.taverna.t2flowrender.Invoker.Format;
 
 @Component("webapp")
 @Path("/")
 public class T2FlowRenderer {
 	public static final String T2FLOW = "application/vnd.taverna.t2flow+xml";
 	public static final String SVG = "image/svg+xml";
+	public static final String PNG = "image/png";
 	public static final String HTML = "text/html";
 	public static final String FORM = "multipart/form-data";
 
@@ -61,7 +63,7 @@ public class T2FlowRenderer {
 	@POST
 	@Consumes(T2FLOW)
 	@Produces(SVG)
-	public byte[] renderT2flow(InputStream t2flow) {
+	public byte[] renderT2flowAsSVG(InputStream t2flow) {
 		File src = null, dst = null;
 		try {
 			src = createTempFile("src", ".t2flow");
@@ -70,6 +72,33 @@ public class T2FlowRenderer {
 			log.info("stored t2flow in " + src.toPath() + " (" + src.length()
 					+ " bytes)");
 			invoker.run(src, dst);
+			log.info("converted to svg in " + dst.toPath() + " ("
+					+ dst.length() + " bytes)");
+			return readAllBytes(dst.toPath());
+		} catch (IOException | InterruptedException e) {
+			throw new WebApplicationException(e, serverError().entity(
+					"problem when converting to image: " + e.getMessage())
+					.build());
+		} finally {
+			if (src != null)
+				src.delete();
+			if (dst != null)
+				dst.delete();
+		}
+	}
+
+	@POST
+	@Consumes(T2FLOW)
+	@Produces(PNG)
+	public byte[] renderT2flowAsPNG(InputStream t2flow) {
+		File src = null, dst = null;
+		try {
+			src = createTempFile("src", ".t2flow");
+			dst = createTempFile("dst", ".png");
+			copy(t2flow, src.toPath(), REPLACE_EXISTING);
+			log.info("stored t2flow in " + src.toPath() + " (" + src.length()
+					+ " bytes)");
+			invoker.run(src, dst, Format.PNG);
 			log.info("converted to svg in " + dst.toPath() + " ("
 					+ dst.length() + " bytes)");
 			return readAllBytes(dst.toPath());
