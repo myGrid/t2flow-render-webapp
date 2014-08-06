@@ -17,6 +17,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 
 import org.apache.commons.logging.Log;
@@ -117,29 +118,10 @@ public class T2FlowRenderer {
 	@POST
 	@Consumes(T2FLOW)
 	@Produces(HTML)
-	public String htmlT2flow(InputStream t2flow) {
-		File src = null, dst = null;
-		try {
-			src = createTempFile("src", ".t2flow");
-			dst = createTempFile("dst", ".svg");
-			copy(t2flow, src.toPath(), REPLACE_EXISTING);
-			log.info("stored t2flow in " + src.toPath() + " (" + src.length()
-					+ " bytes)");
-			invoker.run(src, dst);
-			log.info("converted to svg in " + dst.toPath() + " ("
-					+ dst.length() + " bytes)");
-			return "<img src=\"data:" + SVG + ";base64,"
-					+ printBase64Binary(readAllBytes(dst.toPath())) + "\" />";
-		} catch (IOException | InterruptedException e) {
-			throw new WebApplicationException(e, serverError().entity(
-					"problem when converting to image: " + e.getMessage())
-					.build());
-		} finally {
-			if (src != null)
-				src.delete();
-			if (dst != null)
-				dst.delete();
-		}
+	public String htmlT2flow(InputStream t2flow,
+			@QueryParam("width") Integer width,
+			@QueryParam("height") Integer height) {
+		return renderToHtml(t2flow, width, height);
 	}
 
 	@POST
@@ -149,6 +131,11 @@ public class T2FlowRenderer {
 			@Multipart(value = F_T2FLOW, required = true) InputStream t2flow,
 			@Multipart(value = F_WIDTH, required = false) Integer width,
 			@Multipart(value = F_HEIGHT, required = false) Integer height) {
+		return renderToHtml(t2flow, width, height);
+	}
+
+	private String renderToHtml(InputStream t2flow, Integer width,
+			Integer height) {
 		File src = null, dst = null;
 		try {
 			src = createTempFile("src", ".t2flow");
